@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Juniper Table is a fictional neighborhood restaurant built for the SDK demo host site."
+    />
+    <title>Juniper Table</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Juniper Table home">
+        <span class="brand-mark" aria-hidden="true">JT</span>
+        <span>Juniper Table</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#story">Story</a>
+        <a href="#menu">Menu</a>
+        <a href="#visit">Visit</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Seasonal neighborhood dining</p>
+          <h1 id="hero-title">A calm table for bright, local food.</h1>
+          <p>
+            Juniper Table serves market-led plates, warm bread, and unfussy
+            cocktails in a room built for long conversations.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#menu">View sample menu</a>
+            <a class="button button-secondary" href="#visit">Plan a visit</a>
+          </div>
+          <p class="hero-detail">Tonight: roasted carrots, trout, citrus salad</p>
+        </div>
+      </section>
+
+      <section class="section story-section" id="story" aria-labelledby="story-title">
+        <div>
+          <p class="eyebrow">Our style</p>
+          <h2 id="story-title">Simple food, carefully sourced.</h2>
+        </div>
+        <p>
+          The kitchen keeps the menu short so every dish can stay seasonal.
+          Expect herbs from nearby farms, slow sauces, and desserts that feel
+          familiar without being ordinary.
+        </p>
+      </section>
+
+      <section class="section menu-section" id="menu" aria-labelledby="menu-title">
+        <div class="section-heading">
+          <p class="eyebrow">Sample menu</p>
+          <h2 id="menu-title">A few house favorites</h2>
+        </div>
+        <div class="menu-grid">
+          <article class="menu-card">
+            <span class="price">$18</span>
+            <h3>Garden Toast</h3>
+            <p>Charred sourdough, whipped ricotta, herbs, lemon oil.</p>
+          </article>
+          <article class="menu-card">
+            <span class="price">$29</span>
+            <h3>Steelhead Trout</h3>
+            <p>Brown butter, fennel, potatoes, parsley salad.</p>
+          </article>
+          <article class="menu-card">
+            <span class="price">$13</span>
+            <h3>Citrus Leaf Salad</h3>
+            <p>Greens, shaved fennel, orange, mint, crisp seeds.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section visit-section" id="visit" aria-labelledby="visit-title">
+        <div>
+          <p class="eyebrow">Visit</p>
+          <h2 id="visit-title">Open Tuesday through Sunday.</h2>
+          <p>
+            214 Linden Street, Portland, OR<br />
+            Dinner from 5 PM. Weekend brunch from 10 AM.
+          </p>
+        </div>
+        <a class="button button-primary" href="mailto:hello@junipertable.example">
+          Reserve a table
+        </a>
+      </section>
+
+      <section class="sdk-placeholder" aria-labelledby="sdk-title">
+        <div>
+          <p class="eyebrow">Future owner tools</p>
+          <h2 id="sdk-title">SDK mount point</h2>
+          <p>
+            This site does not manage the menu itself. The embeddable SDK will
+            mount here in Step 2.
+          </p>
+        </div>
+        <div
+          id="menu-admin-sdk-root"
+          data-restaurant-id="demo-restaurant"
+          data-api-base-url="http://127.0.0.1:4000"
+        ></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Juniper Table</span>
+      <span>Fictional restaurant site for the SDK demo</span>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -30,7 +30,7 @@ export function createApp({ store, allowedOrigins }: CreateAppOptions) {
         callback(null, false);
       },
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type"]
+      allowedHeaders: ["Content-Type", "Authorization"]
     })
   );
   app.use(express.json());
