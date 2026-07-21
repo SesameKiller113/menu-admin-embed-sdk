@@ -6,6 +6,7 @@
     "apps/backend",
     "apps/menu-admin",
     "apps/restaurant-site",
+    "packages/menu-admin-core",
     "packages/menu-admin-sdk"
   ],
   "scripts": {
@@ -14,18 +15,22 @@
     "backend:dev": "npm --workspace @menu-admin-embed-sdk/backend run dev",
     "backend:smoke": "npm --workspace @menu-admin-embed-sdk/backend run smoke",
     "backend:typecheck": "npm --workspace @menu-admin-embed-sdk/backend run typecheck",
-    "menu-admin:dev": "npm --workspace @menu-admin-embed-sdk/menu-admin run dev",
-    "menu-admin:build": "npm --workspace @menu-admin-embed-sdk/menu-admin run build",
+    "core:build": "npm --workspace @menu-admin-embed-sdk/core run build",
+    "core:test": "npm --workspace @menu-admin-embed-sdk/core run test",
+    "core:typecheck": "npm --workspace @menu-admin-embed-sdk/core run typecheck",
+    "menu-admin:dev": "npm run core:build && npm --workspace @menu-admin-embed-sdk/menu-admin run dev",
+    "menu-admin:build": "npm run core:build && npm --workspace @menu-admin-embed-sdk/menu-admin run build",
     "menu-admin:preview": "npm --workspace @menu-admin-embed-sdk/menu-admin run preview",
-    "menu-admin:test": "npm --workspace @menu-admin-embed-sdk/menu-admin run test",
-    "menu-admin:typecheck": "npm --workspace @menu-admin-embed-sdk/menu-admin run typecheck",
+    "menu-admin:test": "npm run core:build && npm --workspace @menu-admin-embed-sdk/menu-admin run test",
+    "menu-admin:typecheck": "npm run core:build && npm --workspace @menu-admin-embed-sdk/menu-admin run typecheck",
     "restaurant-site:dev": "npm --workspace @menu-admin-embed-sdk/restaurant-site run dev",
     "restaurant-site:build": "npm --workspace @menu-admin-embed-sdk/restaurant-site run build",
     "restaurant-site:preview": "npm --workspace @menu-admin-embed-sdk/restaurant-site run preview",
     "restaurant-site:typecheck": "npm --workspace @menu-admin-embed-sdk/restaurant-site run typecheck",
     "sdk:build": "npm --workspace @menu-admin-embed-sdk/sdk run build",
     "sdk:typecheck": "npm --workspace @menu-admin-embed-sdk/sdk run typecheck",
-    "test": "npm run backend:smoke && npm run menu-admin:test && npm run restaurant-site:build && npm run sdk:build"
+    "test": "npm run backend:smoke && npm run core:test && npm run menu-admin:test && npm run restaurant-site:build && npm run sdk:build",
+    "typecheck": "npm run backend:typecheck && npm run core:typecheck && npm run menu-admin:typecheck && npm run restaurant-site:typecheck && npm run sdk:typecheck"
   },
   "devDependencies": {
     "concurrently": "^9.2.4"

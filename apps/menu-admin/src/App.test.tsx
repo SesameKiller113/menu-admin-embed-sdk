@@ -1,9 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { MenuItem, MenuItemsClient } from "@menu-admin-embed-sdk/core";
 import { describe, expect, it, vi } from "vitest";
 import { MenuAdminApp } from "./App";
-import type { MenuItemsClient } from "./api/menuItems";
-import type { MenuItem } from "./types";
 
 const item: MenuItem = {
   id: "item_1",

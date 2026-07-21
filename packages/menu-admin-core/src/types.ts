@@ -1,3 +1,7 @@
+export type MaybePromise<T> = T | Promise<T>;
+
+export type GetAccessToken = () => MaybePromise<string | null>;
+
 export type MenuItem = {
   id: string;
   restaurantId: string;

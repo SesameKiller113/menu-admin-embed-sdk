@@ -5,9 +5,12 @@ import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import Typography from "@mui/material/Typography";
+import {
+  createMenuItemsClient,
+  type MenuItem,
+  type MenuItemsClient
+} from "@menu-admin-embed-sdk/core";
 import { RefreshCcw } from "lucide-react";
-import { createMenuItemsClient } from "./api/menuItems";
-import type { MenuItemsClient } from "./api/menuItems";
 import { DeleteMenuItemDialog } from "./components/DeleteMenuItemDialog";
 import {
   AppFrame,
@@ -22,7 +25,6 @@ import { menuAdminConfig } from "./config";
 import { validateMenuItemForm } from "./formValidation";
 import type { MenuItemFormErrors, MenuItemFormValues } from "./formValidation";
 import { menuAdminTheme } from "./theme";
-import type { MenuItem } from "./types";
 
 const emptyForm: MenuItemFormValues = {
   name: "",

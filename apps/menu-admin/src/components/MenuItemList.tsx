@@ -9,9 +9,9 @@ import Paper from "@mui/material/Paper";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
+import type { MenuItem } from "@menu-admin-embed-sdk/core";
 import { CircleAlert, Pencil, Trash2 } from "lucide-react";
 import { formatDate, formatPrice } from "../format";
-import type { MenuItem } from "../types";
 import { PanelHeader } from "./layout";
 
 type MenuItemListProps = {
