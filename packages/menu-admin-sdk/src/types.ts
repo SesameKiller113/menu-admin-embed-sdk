@@ -12,7 +12,7 @@ export type MenuAdminTheme = {
 };
 
 export type MenuAdminSdkError = {
-  kind: "config" | "network" | "api" | "unknown";
+  kind: "config" | "auth" | "network" | "api" | "unknown";
   message: string;
   status?: number;
   code?: string;

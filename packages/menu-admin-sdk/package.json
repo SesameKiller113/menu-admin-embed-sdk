@@ -19,7 +19,18 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.4",
+    "@menu-admin-embed-sdk/core": "0.1.0",
+    "@menu-admin-embed-sdk/menu-admin-react": "0.1.0",
+    "@mui/material": "^5.15.20",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "typescript": "^5.5.3"
   }
 }
