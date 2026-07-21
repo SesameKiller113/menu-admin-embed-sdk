@@ -1,0 +1,15 @@
+{
+  "name": "menu-admin-embed-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/backend"
+  ],
+  "scripts": {
+    "backend:start": "npm --workspace @menu-admin-embed-sdk/backend run start",
+    "backend:dev": "npm --workspace @menu-admin-embed-sdk/backend run dev",
+    "backend:smoke": "npm --workspace @menu-admin-embed-sdk/backend run smoke",
+    "backend:typecheck": "npm --workspace @menu-admin-embed-sdk/backend run typecheck",
+    "test": "npm run backend:smoke"
+  }
+}

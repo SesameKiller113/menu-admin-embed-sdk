@@ -1,0 +1,40 @@
+{
+  "menuItems": [
+    {
+      "id": "item_charred_lemon_chicken",
+      "restaurantId": "demo-restaurant",
+      "name": "Charred Lemon Chicken",
+      "description": "Roasted herbs, lemon jus, and market greens.",
+      "price": 24,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_spicy_rigatoni",
+      "restaurantId": "demo-restaurant",
+      "name": "Spicy Rigatoni",
+      "description": "Tomato cream sauce, Calabrian chile, and parmesan.",
+      "price": 19.5,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_citrus_herb_salad",
+      "restaurantId": "demo-restaurant",
+      "name": "Citrus Herb Salad",
+      "description": "Mixed greens, shaved fennel, orange, mint, and vinaigrette.",
+      "price": 13,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_dark_chocolate_torte",
+      "restaurantId": "demo-restaurant",
+      "name": "Dark Chocolate Torte",
+      "description": "Flourless chocolate cake with whipped cream.",
+      "price": 9.75,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    }
+  ]
+}

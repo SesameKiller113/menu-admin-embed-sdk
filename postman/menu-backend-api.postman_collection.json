@@ -1,0 +1,437 @@
+{
+  "info": {
+    "_postman_id": "f4a63b8c-5b09-4dbd-9db4-menu-backend-api",
+    "name": "Menu Backend API",
+    "description": "One-click API checks for the menu backend. Start the backend first, then run this collection in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Health check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns ok data', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.nested.property('data.ok', true);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 List menu items before create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns a data array', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 Create menu item",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('menuItemName', 'Postman Test Item ' + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('returns created menu item shape', function () {",
+              "  const item = pm.response.json().data;",
+              "  pm.expect(item).to.include({",
+              "    restaurantId: pm.collectionVariables.get('restaurantId'),",
+              "    name: pm.collectionVariables.get('menuItemName'),",
+              "    description: 'Created from Postman collection',",
+              "    price: 12.5",
+              "  });",
+              "  pm.expect(item.id).to.be.a('string').and.not.empty;",
+              "  pm.expect(item.createdAt).to.be.a('string').and.not.empty;",
+              "  pm.expect(item.updatedAt).to.be.a('string').and.not.empty;",
+              "  pm.collectionVariables.set('itemId', item.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{menuItemName}}\",\n  \"description\": \"Created from Postman collection\",\n  \"price\": 12.5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 List menu items after create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('created item is listed', function () {",
+              "  const items = pm.response.json().data;",
+              "  const itemId = pm.collectionVariables.get('itemId');",
+              "  pm.expect(items.some(function (item) { return item.id === itemId; })).to.equal(true);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 Update menu item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns updated menu item', function () {",
+              "  const item = pm.response.json().data;",
+              "  pm.expect(item.id).to.equal(pm.collectionVariables.get('itemId'));",
+              "  pm.expect(item.name).to.equal('Updated Postman Test Item');",
+              "  pm.expect(item.description).to.equal('Updated from Postman collection');",
+              "  pm.expect(item.price).to.equal(15.75);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Postman Test Item\",\n  \"description\": \"Updated from Postman collection\",\n  \"price\": 15.75\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items/{{itemId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items",
+            "{{itemId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06 Validation error for bad create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 400', function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('returns predictable validation error shape', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.nested.property('error.code', 'bad_request');",
+              "  pm.expect(json).to.have.nested.property('error.message', 'Validation failed');",
+              "  pm.expect(json.error.details).to.be.an('object');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Missing name and invalid price precision\",\n  \"price\": 12.999\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 404 for missing item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 404', function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test('returns predictable not_found shape', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.nested.property('error.code', 'not_found');",
+              "  pm.expect(json).to.have.nested.property('error.message');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Missing Item\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items/missing-postman-item",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items",
+            "missing-postman-item"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 Delete menu item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns deleted true', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.nested.property('data.deleted', true);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items/{{itemId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items",
+            "{{itemId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 List menu items after delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('deleted item is no longer listed', function () {",
+              "  const items = pm.response.json().data;",
+              "  const itemId = pm.collectionVariables.get('itemId');",
+              "  pm.expect(items.some(function (item) { return item.id === itemId; })).to.equal(false);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:4000",
+      "type": "string"
+    },
+    {
+      "key": "restaurantId",
+      "value": "demo-restaurant",
+      "type": "string"
+    },
+    {
+      "key": "menuItemName",
+      "value": "Postman Test Item",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
