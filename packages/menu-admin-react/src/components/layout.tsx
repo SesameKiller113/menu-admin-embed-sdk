@@ -2,7 +2,6 @@ import Paper from "@mui/material/Paper";
 import { styled } from "@mui/material/styles";
 
 export const AppFrame = styled("main")(({ theme }) => ({
-  minHeight: "100vh",
   background:
     "linear-gradient(180deg, #f6f7fb 0%, #eef3f8 42%, #f8fafc 100%)",
   padding: theme.spacing(4, 0),
