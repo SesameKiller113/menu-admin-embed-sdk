@@ -237,8 +237,7 @@ h3 {
   font-weight: 900;
 }
 
-.visit-section,
-.sdk-placeholder {
+.visit-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -263,26 +262,26 @@ h3 {
 }
 
 .sdk-placeholder {
+  display: grid;
+  gap: 28px;
   padding: 32px;
   border: 1px dashed rgba(36, 90, 66, 0.4);
   border-radius: 8px;
   background: #ffffff;
 }
 
+.sdk-placeholder > div:first-child {
+  max-width: 720px;
+}
+
 #menu-admin-sdk-root {
-  min-width: min(360px, 100%);
-  min-height: 96px;
-  border: 1px solid rgba(36, 90, 66, 0.24);
-  border-radius: 8px;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgba(36, 90, 66, 0.08) 0,
-      rgba(36, 90, 66, 0.08) 10px,
-      transparent 10px,
-      transparent 20px
-    ),
-    rgba(247, 248, 243, 0.86);
+  width: 100%;
+  min-width: 0;
+}
+
+#menu-admin-sdk-root [data-menu-admin-sdk="root"] {
+  display: block;
+  width: 100%;
 }
 
 .site-footer {
