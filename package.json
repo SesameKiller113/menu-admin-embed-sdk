@@ -5,7 +5,8 @@
   "workspaces": [
     "apps/backend",
     "apps/menu-admin",
-    "apps/restaurant-site"
+    "apps/restaurant-site",
+    "packages/menu-admin-sdk"
   ],
   "scripts": {
     "dev": "concurrently -k -n backend,menu-admin,restaurant-site -c cyan,green,magenta \"npm run backend:start\" \"npm run menu-admin:dev\" \"npm run restaurant-site:dev\"",
@@ -22,7 +23,9 @@
     "restaurant-site:build": "npm --workspace @menu-admin-embed-sdk/restaurant-site run build",
     "restaurant-site:preview": "npm --workspace @menu-admin-embed-sdk/restaurant-site run preview",
     "restaurant-site:typecheck": "npm --workspace @menu-admin-embed-sdk/restaurant-site run typecheck",
-    "test": "npm run backend:smoke && npm run menu-admin:test && npm run restaurant-site:build"
+    "sdk:build": "npm --workspace @menu-admin-embed-sdk/sdk run build",
+    "sdk:typecheck": "npm --workspace @menu-admin-embed-sdk/sdk run typecheck",
+    "test": "npm run backend:smoke && npm run menu-admin:test && npm run restaurant-site:build && npm run sdk:build"
   },
   "devDependencies": {
     "concurrently": "^9.2.4"
