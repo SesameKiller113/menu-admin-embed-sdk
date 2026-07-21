@@ -1,3 +1,17 @@
+import createCache from "@emotion/cache";
+import { CacheProvider } from "@emotion/react";
+import CssBaseline from "@mui/material/CssBaseline";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {
+  createMenuItemsClient,
+  MenuItemsApiError
+} from "@menu-admin-embed-sdk/core";
+import {
+  MenuAdminApp,
+  menuAdminTheme
+} from "@menu-admin-embed-sdk/menu-admin-react";
+import { createElement } from "react";
+import { createRoot } from "react-dom/client";
 import type {
   MenuAdminHandle,
   MenuAdminMountOptions,
@@ -16,6 +30,8 @@ export type {
 
 type NormalizedOptions = {
   apiBaseUrl: string;
+  getAccessToken?: NonNullable<MenuAdminMountOptions["auth"]>["getAccessToken"];
+  onError?: MenuAdminMountOptions["onError"];
   restaurantId: string;
   theme: Required<MenuAdminTheme>;
 };
@@ -37,10 +53,46 @@ export function mountMenuAdmin(
   options.container.append(shadowHost);
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
-  renderPlaceholder(shadowRoot, normalizedOptions);
+  const mountPoint = createShadowMount(shadowRoot);
+  const root = createRoot(mountPoint);
+  const client = createMenuItemsClient({
+    apiBaseUrl: normalizedOptions.apiBaseUrl,
+    getAccessToken: normalizedOptions.getAccessToken,
+    restaurantId: normalizedOptions.restaurantId
+  });
+  const emotionCache = createCache({
+    container: shadowRoot,
+    key: "menu-admin-sdk"
+  });
+  const theme = createSdkTheme(normalizedOptions.theme, mountPoint);
+  let isMounted = true;
+
+  root.render(
+    createElement(
+      CacheProvider,
+      { value: emotionCache },
+      createElement(
+        ThemeProvider,
+        { theme },
+        createElement(CssBaseline),
+        createElement(MenuAdminApp, {
+          client,
+          onError: (error) =>
+            normalizedOptions.onError?.(toSdkError(error)),
+          restaurantId: normalizedOptions.restaurantId
+        })
+      )
+    )
+  );
 
   return {
     unmount() {
+      if (!isMounted) {
+        return;
+      }
+
+      isMounted = false;
+      root.unmount();
       shadowHost.remove();
     }
   };
@@ -62,6 +114,8 @@ function normalizeOptions(options: MenuAdminMountOptions): NormalizedOptions {
 
   return {
     apiBaseUrl,
+    getAccessToken: options.auth?.getAccessToken,
+    onError: options.onError,
     restaurantId,
     theme: {
       ...defaultTheme,
@@ -71,79 +125,60 @@ function normalizeOptions(options: MenuAdminMountOptions): NormalizedOptions {
   };
 }
 
-function renderPlaceholder(
-  shadowRoot: ShadowRoot,
-  { apiBaseUrl, restaurantId, theme }: NormalizedOptions
-) {
+function createShadowMount(shadowRoot: ShadowRoot) {
   const style = document.createElement("style");
   style.textContent = `
     :host {
       all: initial;
-      color: var(--menu-admin-sdk-text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    .placeholder {
-      background: var(--menu-admin-sdk-background);
-      border: 1px solid rgba(36, 90, 66, 0.18);
-      border-radius: var(--menu-admin-sdk-radius);
-      display: grid;
-      gap: 8px;
-      padding: 20px;
-    }
-
-    .eyebrow {
-      color: var(--menu-admin-sdk-primary);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    h2,
-    p {
-      margin: 0;
-    }
-
-    h2 {
-      font-size: 20px;
-      line-height: 1.2;
-    }
-
-    p {
-      color: color-mix(in srgb, var(--menu-admin-sdk-text) 72%, transparent);
-      font-size: 14px;
-      line-height: 1.45;
+      display: block;
     }
   `;
 
-  const wrapper = document.createElement("section");
-  wrapper.className = "placeholder";
-  wrapper.style.setProperty("--menu-admin-sdk-background", theme.backgroundColor);
-  wrapper.style.setProperty("--menu-admin-sdk-primary", theme.primaryColor);
-  wrapper.style.setProperty("--menu-admin-sdk-radius", `${theme.borderRadius}px`);
-  wrapper.style.setProperty("--menu-admin-sdk-text", theme.textColor);
+  const mountPoint = document.createElement("div");
+  mountPoint.setAttribute("data-menu-admin-sdk-mount", "");
+  shadowRoot.append(style, mountPoint);
 
-  const eyebrow = document.createElement("p");
-  eyebrow.className = "eyebrow";
-  eyebrow.textContent = "Menu Admin SDK";
+  return mountPoint;
+}
 
-  const title = document.createElement("h2");
-  title.textContent = "SDK contract ready";
-
-  const body = document.createElement("p");
-  body.textContent = `Ready to mount menu-admin for ${restaurantId}.`;
-
-  const api = document.createElement("p");
-  api.textContent = `API: ${apiBaseUrl}`;
-
-  wrapper.append(eyebrow, title, body, api);
-  shadowRoot.append(style, wrapper);
+function createSdkTheme(
+  theme: Required<MenuAdminTheme>,
+  portalContainer: HTMLElement
+) {
+  return createTheme(menuAdminTheme, {
+    components: {
+      MuiModal: {
+        defaultProps: {
+          container: portalContainer
+        }
+      },
+      MuiPopover: {
+        defaultProps: {
+          container: portalContainer
+        }
+      },
+      MuiPopper: {
+        defaultProps: {
+          container: portalContainer
+        }
+      }
+    },
+    palette: {
+      background: {
+        default: theme.backgroundColor,
+        paper: theme.backgroundColor
+      },
+      primary: {
+        main: theme.primaryColor
+      },
+      text: {
+        primary: theme.textColor
+      }
+    },
+    shape: {
+      borderRadius: theme.borderRadius
+    }
+  });
 }
 
 function normalizeRequiredString(value: string, fieldName: string) {
@@ -201,4 +236,32 @@ function createSdkError(error: MenuAdminSdkError) {
   runtimeError.code = error.code;
 
   return runtimeError;
+}
+
+function toSdkError(error: Error): MenuAdminSdkError {
+  if (error instanceof MenuItemsApiError) {
+    return {
+      code: error.code,
+      kind: getSdkErrorKind(error),
+      message: error.message,
+      status: error.status
+    };
+  }
+
+  return {
+    kind: "unknown",
+    message: error.message
+  };
+}
+
+function getSdkErrorKind(error: MenuItemsApiError): MenuAdminSdkError["kind"] {
+  if (error.code === "auth_error") {
+    return "auth";
+  }
+
+  if (error.status === 0) {
+    return "network";
+  }
+
+  return "api";
 }
