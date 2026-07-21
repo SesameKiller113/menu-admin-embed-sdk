@@ -1,11 +1,13 @@
+import { MenuItemsApiError } from "./errors";
 import type {
   ApiErrorResponse,
   DeleteMenuItemResponse,
+  GetAccessToken,
   MenuItem,
   MenuItemInput,
   MenuItemListResponse,
   MenuItemResponse
-} from "../types";
+} from "./types";
 
 export type MenuItemsClient = {
   listMenuItems(): Promise<MenuItem[]>;
@@ -17,25 +19,21 @@ export type MenuItemsClient = {
 export type MenuItemsClientConfig = {
   apiBaseUrl: string;
   restaurantId: string;
+  getAccessToken?: GetAccessToken;
 };
 
-export class MenuItemsApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-    readonly details?: Record<string, string>
-  ) {
-    super(message);
-    this.name = "MenuItemsApiError";
-  }
-}
+type RequestJsonOptions = {
+  body?: unknown;
+  getAccessToken?: GetAccessToken;
+  method: "GET" | "POST" | "PATCH" | "DELETE";
+};
 
 export function createMenuItemsClient({
   apiBaseUrl,
+  getAccessToken,
   restaurantId
 }: MenuItemsClientConfig): MenuItemsClient {
-  const baseUrl = apiBaseUrl.replace(/\/+$/, "");
+  const baseUrl = apiBaseUrl.trim().replace(/\/+$/, "");
   const menuItemsUrl = `${baseUrl}/api/restaurants/${encodeURIComponent(
     restaurantId
   )}/menu-items`;
@@ -43,6 +41,7 @@ export function createMenuItemsClient({
   return {
     async listMenuItems() {
       const response = await requestJson<MenuItemListResponse>(menuItemsUrl, {
+        getAccessToken,
         method: "GET"
       });
       return response.data;
@@ -50,8 +49,9 @@ export function createMenuItemsClient({
 
     async createMenuItem(input) {
       const response = await requestJson<MenuItemResponse>(menuItemsUrl, {
-        method: "POST",
-        body: JSON.stringify(input)
+        body: input,
+        getAccessToken,
+        method: "POST"
       });
       return response.data;
     },
@@ -60,8 +60,9 @@ export function createMenuItemsClient({
       const response = await requestJson<MenuItemResponse>(
         `${menuItemsUrl}/${encodeURIComponent(itemId)}`,
         {
-          method: "PATCH",
-          body: JSON.stringify(input)
+          body: input,
+          getAccessToken,
+          method: "PATCH"
         }
       );
       return response.data;
@@ -71,6 +72,7 @@ export function createMenuItemsClient({
       await requestJson<DeleteMenuItemResponse>(
         `${menuItemsUrl}/${encodeURIComponent(itemId)}`,
         {
+          getAccessToken,
           method: "DELETE"
         }
       );
@@ -78,18 +80,23 @@ export function createMenuItemsClient({
   };
 }
 
-async function requestJson<T>(url: string, init: RequestInit): Promise<T> {
+async function requestJson<T>(
+  url: string,
+  { body, getAccessToken, method }: RequestJsonOptions
+): Promise<T> {
   let response: Response;
 
   try {
     response = await fetch(url, {
-      ...init,
-      headers: {
-        Accept: "application/json",
-        ...(init.body ? { "Content-Type": "application/json" } : {})
-      }
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: await createHeaders(body !== undefined, getAccessToken),
+      method
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof MenuItemsApiError) {
+      throw error;
+    }
+
     throw new MenuItemsApiError(
       0,
       "network_error",
@@ -116,6 +123,43 @@ async function requestJson<T>(url: string, init: RequestInit): Promise<T> {
   }
 
   return payload as T;
+}
+
+async function createHeaders(
+  hasBody: boolean,
+  getAccessToken: GetAccessToken | undefined
+) {
+  const headers: Record<string, string> = {
+    Accept: "application/json"
+  };
+
+  if (hasBody) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const token = await getToken(getAccessToken);
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+async function getToken(getAccessToken: GetAccessToken | undefined) {
+  if (!getAccessToken) {
+    return null;
+  }
+
+  try {
+    return (await getAccessToken())?.trim() || null;
+  } catch {
+    throw new MenuItemsApiError(
+      0,
+      "auth_error",
+      "Could not get an access token for the menu API."
+    );
+  }
 }
 
 async function parseJson<T>(response: Response): Promise<T> {

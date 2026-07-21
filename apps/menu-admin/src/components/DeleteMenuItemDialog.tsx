@@ -4,8 +4,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import type { MenuItem } from "@menu-admin-embed-sdk/core";
 import { Trash2, X } from "lucide-react";
-import type { MenuItem } from "../types";
 
 type DeleteMenuItemDialogProps = {
   isDeleting: boolean;

@@ -1,4 +1,4 @@
-import type { MenuItemInput } from "./types";
+import type { MenuItemInput } from "@menu-admin-embed-sdk/core";
 
 export type MenuItemFormValues = {
   name: string;

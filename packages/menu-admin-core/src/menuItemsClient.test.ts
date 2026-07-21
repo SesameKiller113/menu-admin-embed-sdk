@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createMenuItemsClient } from "./menuItems";
+import { createMenuItemsClient } from "./menuItemsClient";
 
 describe("menu items API client", () => {
   afterEach(() => {
@@ -24,6 +24,7 @@ describe("menu items API client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "http://api.test/api/restaurants/demo%20restaurant/menu-items",
       {
+        body: undefined,
         method: "GET",
         headers: {
           Accept: "application/json"
@@ -57,6 +58,55 @@ describe("menu items API client", () => {
         price: 8.5
       })
     ).resolves.toEqual(item);
+  });
+
+  it("adds authorization when the host provides a token", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        data: []
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createMenuItemsClient({
+      apiBaseUrl: "http://api.test",
+      getAccessToken: async () => "demo-token",
+      restaurantId: "demo-restaurant"
+    });
+
+    await client.listMenuItems();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://api.test/api/restaurants/demo-restaurant/menu-items",
+      {
+        body: undefined,
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer demo-token"
+        }
+      }
+    );
+  });
+
+  it("returns auth errors when the host token provider fails", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createMenuItemsClient({
+      apiBaseUrl: "http://api.test",
+      getAccessToken: async () => {
+        throw new Error("Session expired");
+      },
+      restaurantId: "demo-restaurant"
+    });
+
+    await expect(client.listMenuItems()).rejects.toMatchObject({
+      status: 0,
+      code: "auth_error",
+      message: "Could not get an access token for the menu API."
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("turns JSON API errors into typed errors", async () => {
