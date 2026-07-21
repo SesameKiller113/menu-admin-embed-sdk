@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/backend"
+    "apps/backend",
+    "apps/menu-admin"
   ],
   "scripts": {
     "backend:start": "npm --workspace @menu-admin-embed-sdk/backend run start",
     "backend:dev": "npm --workspace @menu-admin-embed-sdk/backend run dev",
     "backend:smoke": "npm --workspace @menu-admin-embed-sdk/backend run smoke",
     "backend:typecheck": "npm --workspace @menu-admin-embed-sdk/backend run typecheck",
-    "test": "npm run backend:smoke"
+    "menu-admin:dev": "npm --workspace @menu-admin-embed-sdk/menu-admin run dev",
+    "menu-admin:build": "npm --workspace @menu-admin-embed-sdk/menu-admin run build",
+    "menu-admin:preview": "npm --workspace @menu-admin-embed-sdk/menu-admin run preview",
+    "menu-admin:test": "npm --workspace @menu-admin-embed-sdk/menu-admin run test",
+    "menu-admin:typecheck": "npm --workspace @menu-admin-embed-sdk/menu-admin run typecheck",
+    "test": "npm run backend:smoke && npm run menu-admin:test"
   }
 }
