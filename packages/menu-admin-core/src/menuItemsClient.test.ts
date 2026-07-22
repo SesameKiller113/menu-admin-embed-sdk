@@ -4,6 +4,7 @@ import { createMenuItemsClient } from "./menuItemsClient";
 describe("menu items API client", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("builds restaurant-scoped list URLs", async () => {
@@ -21,16 +22,18 @@ describe("menu items API client", () => {
 
     await expect(client.listMenuItems()).resolves.toEqual([]);
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://api.test/api/restaurants/demo%20restaurant/menu-items",
-      {
-        body: undefined,
-        method: "GET",
-        headers: {
-          Accept: "application/json"
-        }
-      }
+    const [url, requestOptions] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      "http://api.test/api/restaurants/demo%20restaurant/menu-items"
     );
+    expect(requestOptions).toMatchObject({
+      body: undefined,
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    expect(requestOptions.signal).toBeInstanceOf(AbortSignal);
   });
 
   it("returns created menu items", async () => {
@@ -76,17 +79,19 @@ describe("menu items API client", () => {
 
     await client.listMenuItems();
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://api.test/api/restaurants/demo-restaurant/menu-items",
-      {
-        body: undefined,
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer demo-token"
-        }
-      }
+    const [url, requestOptions] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      "http://api.test/api/restaurants/demo-restaurant/menu-items"
     );
+    expect(requestOptions).toMatchObject({
+      body: undefined,
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer demo-token"
+      }
+    });
+    expect(requestOptions.signal).toBeInstanceOf(AbortSignal);
   });
 
   it("returns auth errors when the host token provider fails", async () => {
@@ -145,6 +150,35 @@ describe("menu items API client", () => {
         name: "Name is required"
       }
     });
+  });
+
+  it("turns slow API responses into timeout errors", async () => {
+    vi.useFakeTimers();
+
+    const fetchMock = vi.fn((_url: string, options: RequestInit) => {
+      return new Promise<Response>((_resolve, reject) => {
+        options.signal?.addEventListener("abort", () => {
+          reject(new DOMException("Request aborted", "AbortError"));
+        });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createMenuItemsClient({
+      apiBaseUrl: "http://api.test",
+      requestTimeoutMs: 50,
+      restaurantId: "demo-restaurant"
+    });
+
+    const request = expect(client.listMenuItems()).rejects.toMatchObject({
+      status: 0,
+      code: "timeout_error",
+      message: "The menu API took too long to respond."
+    });
+
+    await vi.advanceTimersByTimeAsync(50);
+
+    await request;
   });
 });
 

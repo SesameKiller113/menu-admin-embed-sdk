@@ -20,20 +20,26 @@ export type MenuItemsClientConfig = {
   apiBaseUrl: string;
   restaurantId: string;
   getAccessToken?: GetAccessToken;
+  requestTimeoutMs?: number;
 };
 
 type RequestJsonOptions = {
   body?: unknown;
   getAccessToken?: GetAccessToken;
   method: "GET" | "POST" | "PATCH" | "DELETE";
+  requestTimeoutMs: number;
 };
+
+const defaultRequestTimeoutMs = 8000;
 
 export function createMenuItemsClient({
   apiBaseUrl,
   getAccessToken,
-  restaurantId
+  restaurantId,
+  requestTimeoutMs
 }: MenuItemsClientConfig): MenuItemsClient {
   const baseUrl = apiBaseUrl.trim().replace(/\/+$/, "");
+  const timeoutMs = requestTimeoutMs ?? defaultRequestTimeoutMs;
   const menuItemsUrl = `${baseUrl}/api/restaurants/${encodeURIComponent(
     restaurantId
   )}/menu-items`;
@@ -42,7 +48,8 @@ export function createMenuItemsClient({
     async listMenuItems() {
       const response = await requestJson<MenuItemListResponse>(menuItemsUrl, {
         getAccessToken,
-        method: "GET"
+        method: "GET",
+        requestTimeoutMs: timeoutMs
       });
       return response.data;
     },
@@ -51,7 +58,8 @@ export function createMenuItemsClient({
       const response = await requestJson<MenuItemResponse>(menuItemsUrl, {
         body: input,
         getAccessToken,
-        method: "POST"
+        method: "POST",
+        requestTimeoutMs: timeoutMs
       });
       return response.data;
     },
@@ -62,7 +70,8 @@ export function createMenuItemsClient({
         {
           body: input,
           getAccessToken,
-          method: "PATCH"
+          method: "PATCH",
+          requestTimeoutMs: timeoutMs
         }
       );
       return response.data;
@@ -73,7 +82,8 @@ export function createMenuItemsClient({
         `${menuItemsUrl}/${encodeURIComponent(itemId)}`,
         {
           getAccessToken,
-          method: "DELETE"
+          method: "DELETE",
+          requestTimeoutMs: timeoutMs
         }
       );
     }
@@ -82,19 +92,32 @@ export function createMenuItemsClient({
 
 async function requestJson<T>(
   url: string,
-  { body, getAccessToken, method }: RequestJsonOptions
+  { body, getAccessToken, method, requestTimeoutMs }: RequestJsonOptions
 ): Promise<T> {
   let response: Response;
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => {
+    controller.abort();
+  }, requestTimeoutMs);
 
   try {
     response = await fetch(url, {
       body: body === undefined ? undefined : JSON.stringify(body),
       headers: await createHeaders(body !== undefined, getAccessToken),
-      method
+      method,
+      signal: controller.signal
     });
   } catch (error) {
     if (error instanceof MenuItemsApiError) {
       throw error;
+    }
+
+    if (isAbortError(error)) {
+      throw new MenuItemsApiError(
+        0,
+        "timeout_error",
+        "The menu API took too long to respond."
+      );
     }
 
     throw new MenuItemsApiError(
@@ -102,6 +125,8 @@ async function requestJson<T>(
       "network_error",
       "Could not reach the menu API. Check that the backend is running."
     );
+  } finally {
+    globalThis.clearTimeout(timeoutId);
   }
 
   const payload = await parseJson<T | ApiErrorResponse>(response);
@@ -180,5 +205,14 @@ function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
     value !== null &&
     "error" in value &&
     typeof (value as ApiErrorResponse).error?.message === "string"
+  );
+}
+
+function isAbortError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
   );
 }

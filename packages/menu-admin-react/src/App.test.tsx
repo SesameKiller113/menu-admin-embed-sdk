@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { MenuItem, MenuItemsClient } from "@menu-admin-embed-sdk/core";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MenuAdminApp } from "./MenuAdminApp";
 
 const item: MenuItem = {
@@ -15,6 +15,10 @@ const item: MenuItem = {
 };
 
 describe("MenuAdminApp", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("shows loading and then menu items", async () => {
     const client = createClient({
       listMenuItems: vi.fn().mockResolvedValue([item])
@@ -36,6 +40,25 @@ describe("MenuAdminApp", () => {
 
     expect(
       await screen.findByText(/Could not load menu items. Backend is down/)
+    ).toBeInTheDocument();
+  });
+
+  it("shows a slow network notice when loading takes longer than expected", async () => {
+    vi.useFakeTimers();
+    const client = createClient({
+      listMenuItems: vi.fn(() => new Promise<MenuItem[]>(() => {}))
+    });
+
+    render(<MenuAdminApp client={client} restaurantId="demo-restaurant" />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+
+    expect(
+      screen.getByText(
+        "Still loading menu items. The menu API is taking longer than usual."
+      )
     ).toBeInTheDocument();
   });
 

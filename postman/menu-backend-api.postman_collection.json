@@ -2,8 +2,18 @@
   "info": {
     "_postman_id": "f4a63b8c-5b09-4dbd-9db4-menu-backend-api",
     "name": "Menu Backend API",
-    "description": "One-click API checks for the menu backend. Start the backend first, then run this collection in order.",
+    "description": "One-click API checks for the menu backend. Start the backend with MENU_ADMIN_ACCESS_TOKEN=demo-local-token, then run this collection in order.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
   },
   "item": [
     {
@@ -43,7 +53,49 @@
       "response": []
     },
     {
-      "name": "02 List menu items before create",
+      "name": "02 List menu items without token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 401 when auth is enabled', function () {",
+              "  pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test('returns predictable unauthorized shape', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.nested.property('error.code', 'unauthorized');",
+              "  pm.expect(json).to.have.nested.property('error.message', 'Valid menu admin credentials are required.');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{restaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 List menu items before create",
       "event": [
         {
           "listen": "test",
@@ -81,7 +133,48 @@
       "response": []
     },
     {
-      "name": "03 Create menu item",
+      "name": "04 List alternate restaurant seed data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('returns the alternate restaurant menu only', function () {",
+              "  const items = pm.response.json().data;",
+              "  pm.expect(items).to.be.an('array').and.not.empty;",
+              "  items.forEach(function (item) {",
+              "    pm.expect(item.restaurantId).to.equal(pm.collectionVariables.get('alternateRestaurantId'));",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/restaurants/{{alternateRestaurantId}}/menu-items",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "restaurants",
+            "{{alternateRestaurantId}}",
+            "menu-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 Create menu item",
       "event": [
         {
           "listen": "prerequest",
@@ -146,7 +239,7 @@
       "response": []
     },
     {
-      "name": "04 List menu items after create",
+      "name": "06 List menu items after create",
       "event": [
         {
           "listen": "test",
@@ -185,7 +278,7 @@
       "response": []
     },
     {
-      "name": "05 Update menu item",
+      "name": "07 Update menu item",
       "event": [
         {
           "listen": "test",
@@ -236,7 +329,7 @@
       "response": []
     },
     {
-      "name": "06 Validation error for bad create",
+      "name": "08 Validation error for bad create",
       "event": [
         {
           "listen": "test",
@@ -285,7 +378,7 @@
       "response": []
     },
     {
-      "name": "07 404 for missing item",
+      "name": "09 404 for missing item",
       "event": [
         {
           "listen": "test",
@@ -334,7 +427,7 @@
       "response": []
     },
     {
-      "name": "08 Delete menu item",
+      "name": "10 Delete menu item",
       "event": [
         {
           "listen": "test",
@@ -373,7 +466,7 @@
       "response": []
     },
     {
-      "name": "09 List menu items after delete",
+      "name": "11 List menu items after delete",
       "event": [
         {
           "listen": "test",
@@ -421,6 +514,16 @@
     {
       "key": "restaurantId",
       "value": "demo-restaurant",
+      "type": "string"
+    },
+    {
+      "key": "alternateRestaurantId",
+      "value": "harbor-cafe",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "demo-local-token",
       "type": "string"
     },
     {

@@ -1,6 +1,7 @@
 import path from "node:path";
 
 export type BackendConfig = {
+  accessToken?: string;
   host: string;
   port: number;
   menuDataFile: string;
@@ -22,6 +23,7 @@ const defaultOrigins = [
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): BackendConfig {
   return {
+    accessToken: normalizeOptionalString(env.MENU_ADMIN_ACCESS_TOKEN),
     host: env.HOST || "127.0.0.1",
     port: parsePort(env.PORT),
     menuDataFile:
@@ -54,4 +56,10 @@ function parseAllowedOrigins(value: string | undefined): string[] {
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+}
+
+function normalizeOptionalString(value: string | undefined) {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue || undefined;
 }

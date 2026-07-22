@@ -23,6 +23,7 @@ export type MenuAdminMountOptions = {
   restaurantId: string;
   apiBaseUrl: string;
   auth?: MenuAdminAuth;
+  requestTimeoutMs?: number;
   theme?: MenuAdminTheme;
   onError?: (error: MenuAdminSdkError) => void;
 };

@@ -1,5 +1,9 @@
 import cors from "cors";
-import express from "express";
+import express, {
+  type NextFunction,
+  type Request,
+  type Response
+} from "express";
 import { ApiError, errorHandler } from "./errors.js";
 import type { BackendConfig } from "./config.js";
 import type { FlatFileMenuItemStore } from "./storage.js";
@@ -12,11 +16,16 @@ import {
 } from "./validation.js";
 
 type CreateAppOptions = {
+  accessToken?: BackendConfig["accessToken"];
   store: FlatFileMenuItemStore;
   allowedOrigins: BackendConfig["allowedOrigins"];
 };
 
-export function createApp({ store, allowedOrigins }: CreateAppOptions) {
+export function createApp({
+  accessToken,
+  store,
+  allowedOrigins
+}: CreateAppOptions) {
   const app = express();
 
   app.use(
@@ -38,6 +47,8 @@ export function createApp({ store, allowedOrigins }: CreateAppOptions) {
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ data: { ok: true } });
   });
+
+  app.use("/api/restaurants", requireMenuAdminAuth(accessToken));
 
   app.get("/api/restaurants/:restaurantId/menu-items", async (req, res, next) => {
     try {
@@ -96,4 +107,26 @@ export function createApp({ store, allowedOrigins }: CreateAppOptions) {
   app.use(errorHandler);
 
   return app;
+}
+
+function requireMenuAdminAuth(accessToken: string | undefined) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!accessToken) {
+      next();
+      return;
+    }
+
+    if (req.header("authorization")?.trim() === `Bearer ${accessToken}`) {
+      next();
+      return;
+    }
+
+    next(
+      new ApiError(
+        401,
+        "unauthorized",
+        "Valid menu admin credentials are required."
+      )
+    );
+  };
 }

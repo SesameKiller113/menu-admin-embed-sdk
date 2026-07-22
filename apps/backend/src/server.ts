@@ -8,6 +8,7 @@ const store = new FlatFileMenuItemStore(config.menuDataFile);
 await store.init();
 
 const app = createApp({
+  accessToken: config.accessToken,
   store,
   allowedOrigins: config.allowedOrigins
 });
