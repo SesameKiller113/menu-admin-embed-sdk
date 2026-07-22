@@ -13,6 +13,7 @@ const store = new FlatFileMenuItemStore(dataFile);
 await store.init();
 
 const app = createApp({
+  accessToken: "smoke-token",
   store,
   allowedOrigins: ["http://localhost:5173"]
 });
@@ -29,10 +30,24 @@ try {
   assert.equal(health.status, 200);
   assert.equal(health.body.data.ok, true);
 
-  const emptyList = await request(
+  const missingToken = await request(
     baseUrl,
     "GET",
     "/api/restaurants/demo-restaurant/menu-items"
+  );
+  assert.equal(missingToken.status, 401);
+  assert.equal(missingToken.body.error.code, "unauthorized");
+
+  const authHeaders = {
+    authorization: "Bearer smoke-token"
+  };
+
+  const emptyList = await request(
+    baseUrl,
+    "GET",
+    "/api/restaurants/demo-restaurant/menu-items",
+    undefined,
+    authHeaders
   );
   assert.equal(emptyList.status, 200);
   assert.deepEqual(emptyList.body.data, []);
@@ -45,7 +60,8 @@ try {
       name: "Charred Lemon Chicken",
       description: "Roasted herbs and lemon jus",
       price: 24
-    }
+    },
+    authHeaders
   );
   assert.equal(created.status, 201);
   assert.equal(created.body.data.restaurantId, "demo-restaurant");
@@ -54,7 +70,9 @@ try {
   const listed = await request(
     baseUrl,
     "GET",
-    "/api/restaurants/demo-restaurant/menu-items"
+    "/api/restaurants/demo-restaurant/menu-items",
+    undefined,
+    authHeaders
   );
   assert.equal(listed.body.data.length, 1);
   assert.equal(listed.body.data[0].id, created.body.data.id);
@@ -67,7 +85,8 @@ try {
       name: "Charred Lemon Chicken Plate",
       description: "Roasted herbs, lemon jus, and greens",
       price: 25.5
-    }
+    },
+    authHeaders
   );
   assert.equal(updated.status, 200);
   assert.equal(updated.body.data.name, "Charred Lemon Chicken Plate");
@@ -80,7 +99,8 @@ try {
     {
       description: "Missing name and bad price",
       price: 12.999
-    }
+    },
+    authHeaders
   );
   assert.equal(validation.status, 400);
   assert.equal(validation.body.error.code, "bad_request");
@@ -91,7 +111,8 @@ try {
     "/api/restaurants/demo-restaurant/menu-items/missing-item",
     {
       name: "Missing"
-    }
+    },
+    authHeaders
   );
   assert.equal(missing.status, 404);
   assert.equal(missing.body.error.code, "not_found");
@@ -105,7 +126,9 @@ try {
   const deleted = await request(
     baseUrl,
     "DELETE",
-    `/api/restaurants/demo-restaurant/menu-items/${created.body.data.id}`
+    `/api/restaurants/demo-restaurant/menu-items/${created.body.data.id}`,
+    undefined,
+    authHeaders
   );
   assert.equal(deleted.status, 200);
   assert.deepEqual(deleted.body.data, { deleted: true });
@@ -122,11 +145,15 @@ async function request(
   baseUrl: string,
   method: string,
   pathname: string,
-  body?: unknown
+  body?: unknown,
+  headers: Record<string, string> = {}
 ) {
   const response = await fetch(`${baseUrl}${pathname}`, {
     method,
-    headers: body ? { "content-type": "application/json" } : undefined,
+    headers: {
+      ...headers,
+      ...(body ? { "content-type": "application/json" } : {})
+    },
     body: body ? JSON.stringify(body) : undefined
   });
   const text = await response.text();

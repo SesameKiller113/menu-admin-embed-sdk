@@ -33,8 +33,11 @@ type NormalizedOptions = {
   getAccessToken?: NonNullable<MenuAdminMountOptions["auth"]>["getAccessToken"];
   onError?: MenuAdminMountOptions["onError"];
   restaurantId: string;
+  requestTimeoutMs: number;
   theme: Required<MenuAdminTheme>;
 };
+
+const defaultRequestTimeoutMs = 8000;
 
 const defaultTheme: Required<MenuAdminTheme> = {
   backgroundColor: "#ffffff",
@@ -58,7 +61,8 @@ export function mountMenuAdmin(
   const client = createMenuItemsClient({
     apiBaseUrl: normalizedOptions.apiBaseUrl,
     getAccessToken: normalizedOptions.getAccessToken,
-    restaurantId: normalizedOptions.restaurantId
+    restaurantId: normalizedOptions.restaurantId,
+    requestTimeoutMs: normalizedOptions.requestTimeoutMs
   });
   const emotionCache = createCache({
     container: shadowRoot,
@@ -117,6 +121,7 @@ function normalizeOptions(options: MenuAdminMountOptions): NormalizedOptions {
     getAccessToken: options.auth?.getAccessToken,
     onError: options.onError,
     restaurantId,
+    requestTimeoutMs: normalizeRequestTimeoutMs(options.requestTimeoutMs),
     theme: {
       ...defaultTheme,
       ...options.theme,
@@ -217,6 +222,21 @@ function normalizeBorderRadius(value: number | undefined) {
     throw createSdkError({
       kind: "config",
       message: "MenuAdmin SDK theme.borderRadius must be a non-negative number."
+    });
+  }
+
+  return value;
+}
+
+function normalizeRequestTimeoutMs(value: number | undefined) {
+  if (value === undefined) {
+    return defaultRequestTimeoutMs;
+  }
+
+  if (!Number.isFinite(value) || value <= 0) {
+    throw createSdkError({
+      kind: "config",
+      message: "MenuAdmin SDK requestTimeoutMs must be a positive number."
     });
   }
 

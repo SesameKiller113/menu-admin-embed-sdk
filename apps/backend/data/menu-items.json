@@ -35,6 +35,33 @@
       "price": 9.75,
       "createdAt": "2026-07-20T00:00:00.000Z",
       "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_harbor_chowder",
+      "restaurantId": "harbor-cafe",
+      "name": "Harbor Chowder",
+      "description": "Creamy clam chowder with potatoes, celery, and herbs.",
+      "price": 15.5,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_grilled_salmon_bowl",
+      "restaurantId": "harbor-cafe",
+      "name": "Grilled Salmon Bowl",
+      "description": "Salmon, brown rice, cucumber, avocado, and sesame dressing.",
+      "price": 22,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
+    },
+    {
+      "id": "item_blueberry_panna_cotta",
+      "restaurantId": "harbor-cafe",
+      "name": "Blueberry Panna Cotta",
+      "description": "Vanilla custard with blueberry compote and lemon zest.",
+      "price": 10,
+      "createdAt": "2026-07-20T00:00:00.000Z",
+      "updatedAt": "2026-07-20T00:00:00.000Z"
     }
   ]
 }

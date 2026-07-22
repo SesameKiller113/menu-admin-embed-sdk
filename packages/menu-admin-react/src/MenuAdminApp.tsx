@@ -45,6 +45,8 @@ export function MenuAdminApp({
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const isLoadingSlow = useSlowRequest(isLoading);
+  const isWriteSlow = useSlowRequest(isSaving || deletingItemId !== null);
 
   const reportError = useCallback(
     (error: unknown) => {
@@ -187,6 +189,18 @@ export function MenuAdminApp({
           </Alert>
         ) : null}
 
+        {isLoadingSlow && !loadError ? (
+          <Alert severity="info">
+            Still loading menu items. The menu API is taking longer than usual.
+          </Alert>
+        ) : null}
+
+        {isWriteSlow && !saveError ? (
+          <Alert severity="info">
+            Still saving menu changes. The menu API is taking longer than usual.
+          </Alert>
+        ) : null}
+
         <ContentGrid>
           <MenuItemForm
             errors={formErrors}
@@ -224,4 +238,25 @@ function normalizeError(error: unknown) {
   }
 
   return new Error("Something went wrong.");
+}
+
+function useSlowRequest(isActive: boolean, delayMs = 2000) {
+  const [isSlow, setIsSlow] = useState(false);
+
+  useEffect(() => {
+    if (!isActive) {
+      setIsSlow(false);
+      return;
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      setIsSlow(true);
+    }, delayMs);
+
+    return () => {
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [delayMs, isActive]);
+
+  return isSlow;
 }

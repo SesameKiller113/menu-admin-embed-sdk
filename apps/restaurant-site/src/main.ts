@@ -9,8 +9,10 @@ const menuAdminHandle = sdkRoot
       restaurantId: getRequiredDataValue(sdkRoot, "restaurantId"),
       apiBaseUrl: getRequiredDataValue(sdkRoot, "apiBaseUrl"),
       auth: {
-        getAccessToken: async () => null
+        getAccessToken: async () =>
+          import.meta.env.VITE_MENU_ADMIN_ACCESS_TOKEN?.trim() || null
       },
+      requestTimeoutMs: 8000,
       theme: {
         backgroundColor: "#ffffff",
         borderRadius: 8,
